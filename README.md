@@ -12,55 +12,63 @@ RESTful API ushın on-line dúkan platforması. Django hám Django REST Framewor
 - **Signals:** Jańa paydalanıwshı dizimnen ótkende "Xosh keldińiz" degen email jiberiw.
 - **Admin Panel:** Ónimler hám buyırtpalardı basqarıw ushın qolaylı panel.
 - **API Documentation:** Swagger arqalı barlıq endpoitlerdi kóriw hám testlew.
+- **Qáwipsizlik (Security):** 
+    - Rate Limiting (Throttling) — spam hám DDOS-tan qorǵaw.
+    - Race Condition Protection — bir waqıtta kóp buyırtpa berilgende skladtı qáte esaplawdan saqlaw.
+    - Environment Variables — barlıq jasırın maǵlıwmatlar `.env` faylında.
 
-## Ornatıw hám Iske túsiriw
+## Ornatıw hám Iske túsiriw (Docker arqalı — Eń ańsat jolı)
 
 ### 1. Reppozitoriyanı kóshirip alıw:
 ```bash
-git clone <repository_url>
+git clone https://github.com/Sanjar-swe/Edukan.git
 cd OnlineDukan
 ```
 
-### 2. Virtual ortalıqtı jaratıw hám iske túsiriw:
-```bash
-python -m venv venv
-source venv/bin/activate  # Windows ushın: venv\Scripts\activate
-```
-
-### 3. Kerekli kitapxanalardı ornatıw:
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Sazlaw (Environment Variables):
-`.env.example` faylınan `.env` faylın jaratıń hám ózińizdiń maǵlıwmatlarıńızdı kiritiń (DB, Bot token):
+### 2. Sazlaw (Environment Variables):
+`.env.example` faylınan `.env` faylın jaratıń hám ózińizdiń maǵlıwmatlarıńızdı kiritiń (Telegram Bot token hám t.b.):
 ```bash
 cp .env.example .env
 ```
 
-### 5. Maǵlıwmatlar bazasın sazlaw hám migraciyalar:
+### 3. Proektti jıynaw hám iske túsiriw:
+Docker ornatılǵan bolsa, tómendegi buyrıqlardı izbe-iz orınlań:
 ```bash
-python manage.py migrate
-python manage.py createsuperuser
+# 1. Konteynerlerdi jıynaw (Build)
+docker-compose build
+
+# 2. Iske túsiriw (Up)
+docker-compose up
+```
+*Bul buyrıq avtomatikalıq túsirip aladı: PostgreSQL bazasın, Django serverin hám Telegram-bottı.*
+
+---
+
+## Ornatıw (Lokal — Docker-siz)
+
+Eger Docker-den paydalanbaqshı bolmasańız:
+
+### 1. Virtual ortalıqtı jaratıw hám iske túsiriw:
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 ```
 
-### 6. Telegram Bot-tı iske túsiriw (Májburiy):
-Registraciya kodın alıw ushın bot islep turıwı kerek:
+### 2. Kitapxanalardı ornatıw hám migraciyalar:
+```bash
+pip install -r requirements.txt
+python manage.py migrate
+```
+
+### 3. Telegram Bot-tı iske túsiriw (Májburiy):
 ```bash
 python users/telegram_bot.py
 ```
 
-### 7. Serverdi iske túsiriw:
+### 4. Serverdi iske túsiriw:
 ```bash
 python manage.py runserver
 ```
-
-### 8. Docker arqalı iske túsiriw (Alternativ):
-Eger sizde Docker ornatılǵan bolsa, proektti tómendegi buyrıq arqalı iske túsire alasız:
-```bash
-docker-compose up --build
-```
-Bul buyrıq avtomatikalıq kerekli ortalıqtı jaratadı hám bazanı sazlaydı. (Eskertpe: `.env` faylı bolıwı shárt).
 
 ## API Endpointler Dizimi
 
