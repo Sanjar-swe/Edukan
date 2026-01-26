@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    ports:
+      - "5433:5432"
+    restart: always
+
+  web:
+    build: .
+    # Сначала накатываем миграции, потом запускаем сервер
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+    depends_on:
+      - db
+    restart: on-failure
+
+  bot:
+    build: .
+    # Даем вебу 5 секунд на начало миграций, чтобы бот не упал сразу
+    command: sh -c "sleep 5 && python users/telegram_bot.py"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+    depends_on:
+      - db
+    restart: on-failure
+
+volumes:
+  postgres_data:
