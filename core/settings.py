@@ -34,7 +34,7 @@ INSTALLED_APPS = [
     # Сторонние приложения
     'rest_framework', # для rest framework
     'django_filters', # для фильтрации
-    'drf_yasg', # для документации
+    'drf_spectacular', # для документации (OpenAPI 3.0)
     'debug_toolbar',
     # Мои приложения
     'api',
@@ -147,6 +147,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -162,7 +163,8 @@ REST_FRAMEWORK = {
         'anon': '100/day',
         'user': '1000/day',
         'auth_attempt': '25/minute',
-    }
+    },
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 SIMPLE_JWT = {
@@ -171,6 +173,13 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-SWAGGER_SETTINGS = {
-    'USE_COMPAT_RENDERERS': False,
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Online Dukan API',
+    'DESCRIPTION': 'API для интернет-магазина Online Dukan',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_SETTINGS': {
+        'persistAuthorization': True,
+    },
+    # Другие настройки
 }

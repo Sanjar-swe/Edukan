@@ -6,8 +6,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.db import transaction
 from django.db.models import Sum, F
 # 
+from drf_spectacular.utils import extend_schema
 from .models import Category, Product, Cart, CartItem, Order, OrderItem, Review
-from .serializers import (CategorySerializer, ProductSerializer, CartSerializer, CartItemSerializer, OrderSerializer, ReviewSerializer)
+from .serializers import (CategorySerializer, ProductSerializer, CartSerializer, CartAddSerializer, CartItemSerializer, OrderSerializer, ReviewSerializer, OrderCheckoutSerializer)
 
 # 1. Продукты и Категории
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
@@ -79,6 +80,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 # 2. Корзина
 class CartViewSet(viewsets.ViewSet):
+    serializer_class = CartSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def list(self, request):
@@ -86,6 +88,7 @@ class CartViewSet(viewsets.ViewSet):
         serializer = CartSerializer(cart)
         return Response(serializer.data)
 
+    @extend_schema(request=CartAddSerializer, responses={201: None})
     @action(detail=False, methods=['post'])
     def add(self, request):
         product_id = request.data.get('product_id')
@@ -135,6 +138,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             return Order.objects.none()
         return Order.objects.filter(user=self.request.user)
     # защищает от ситуации, когда два человека одновременно пытаются купить последний товар.
+    @extend_schema(request=OrderCheckoutSerializer, responses={201: OrderSerializer})
     @action(detail=False, methods=['post'])
     @transaction.atomic
     def checkout(self, request):

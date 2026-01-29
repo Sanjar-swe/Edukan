@@ -45,6 +45,17 @@ class CartSerializer(serializers.ModelSerializer):
         total = sum(item.product.get_price() * item.quantity for item in obj.items.all())
         return total
 
+class CartAddSerializer(serializers.Serializer):
+    product_id = serializers.IntegerField()
+    quantity = serializers.IntegerField(default=1, min_value=1)
+
+class OrderCheckoutSerializer(serializers.Serializer):
+    address = serializers.CharField(max_length=500)
+    cart_item_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        help_text="ID элементов корзины, которые нужно оформить"
+    )
+
 # 4. Заказы
 class OrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
