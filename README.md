@@ -5,8 +5,8 @@ RESTful API ushın on-line dúkan platforması. Django hám Django REST Framewor
 ## Proekt imkaniyatları
 
 - **Autentifikaciya:** JWT (Access/Refresh tokens) arqalı dizimnen ótiwi hám kirisiw.
-- **Ónimler:** Kategoriyalar boyınsha gruppalanıw, izlew, filterlew hám sortirovka.
-- **Sebet:** Ónimlerdi sebetke qosıw, sanın ózgertiw hám óshiriw.
+- **Ónimler:** Kategoriyalar boyınsha gruppalanıw, izlew, filterlew (bahası boyınsha: `min_price`, `max_price`) hám sortirovka.
+- **Sebet:** Ónimlerdi sebetke qosıw, sanın ózgertiw hám óshiriw. Skladtaǵı qaldıqtı (cumulatively) tekseriw.
 - **Buyırtpalar:** Sebetdegi zatlardan buyırtpa jaratıw, skladtı (stock) avtomatikalıq kemeytiw.
 - **Pikirler:** Ónimlerge reyting hám kommentariy qaldırıw.
 - **Signals:** Jańa paydalanıwshı dizimnen ótkende "Xosh keldińiz" degen email jiberiw.
@@ -41,6 +41,12 @@ docker-compose build
 docker-compose up
 ```
 *Bul buyrıq avtomatikalıq túsirip aladı: PostgreSQL bazasın, Django serverin hám Telegram-bottı.*
+
+### 4. Sırırtqı testlew (Ngrok):
+Eger proektti internetke shıǵarıp testlemekshi bolsańız:
+1. `ngrok http 8000` buyrıǵın jıberip URL-dı alıń.
+2. Sol URL-dı `.env`-dag'i `CSRF_TRUSTED_ORIGINS`-ge kiritiń.
+3. [NGROK_GUIDE.md](file:///home/swe/Desktop/OnlineDukan/NGROK_GUIDE.md) boyınsha tolıq instrukciyanı kóriń.
 
 ---
 

@@ -36,7 +36,10 @@ Django требует, чтобы домен ngrok был в списке дов
 ```env
 CSRF_TRUSTED_ORIGINS=https://abcd-123.ngrok-free.app
 ```
-*(Замените `abcd-123.ngrok-free.app` на ваш реальный адрес из терминала ngrok)*
+*(Замените `abcd-123.ngrok-free.app` на ваш реальный адрес из терминала ngrok). После изменения `.env` обязательно перезапустите Docker:*
+```bash
+docker-compose down && docker-compose up --build
+```
 
 ## 4. Что передать фронтендщику
 Поделитесь с ним следующими ссылками:
