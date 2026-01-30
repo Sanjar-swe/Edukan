@@ -72,7 +72,7 @@ async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         logger.info(f"Proceeding to send verification code for user {user_id}")
-        await send_verification_code(update, context, user_id, chat_id)
+        await send_verification_code(update, context, user_id, chat_id, contact.phone_number)
         
     except Exception as e:
         logger.error(f"Critical error in handle_contact for user {user.id}: {e}", exc_info=True)
@@ -83,11 +83,11 @@ async def login_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(f"Login command received from user {update.effective_user.id}")
     await send_verification_code(update, context, update.effective_user.id, update.effective_chat.id)
 
-async def send_verification_code(update_or_query, context, user_id, chat_id):
+async def send_verification_code(update_or_query, context, user_id, chat_id, phone_number=None):
     """Helper to generate and send/edit code message."""
     logger.info(f"Generating verification code for user {user_id}")
     try:
-        session = await sync_to_async(create_auth_session)(user_id, chat_id)
+        session = await sync_to_async(create_auth_session)(user_id, chat_id, phone_number)
         logger.info(f"Auth session created: code={session.code} for user {user_id}")
     except Exception as e:
         logger.error(f"Error creating auth session for user {user_id}: {e}", exc_info=True)

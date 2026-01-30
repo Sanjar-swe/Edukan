@@ -8,7 +8,7 @@ def generate_verification_code(length=6):
     """Generates a numeric verification code."""
     return ''.join(random.choices(string.digits, k=length))
 
-def create_auth_session(telegram_id, chat_id):
+def create_auth_session(telegram_id, chat_id, phone_number=None):
     """Creates a new auth session with a unique code."""
     code = generate_verification_code()
     # Expire old sessions for this telegram_id
@@ -17,12 +17,13 @@ def create_auth_session(telegram_id, chat_id):
     session = TelegramAuthSession.objects.create(
         code=code,
         telegram_id=telegram_id,
-        chat_id=chat_id
+        chat_id=chat_id,
+        phone_number=phone_number
     )
     return session
 
 def verify_telegram_code(code):
-    """Verifies a code and returns the telegram_id if valid."""
+    """Verifies a code and returns (telegram_id, phone_number) if valid."""
     # Code is valid for 5 minutes
     expiry_time = timezone.now() - timedelta(minutes=5)
     
@@ -35,6 +36,6 @@ def verify_telegram_code(code):
     if session:
         session.is_used = True
         session.save()
-        return session.telegram_id
+        return session.telegram_id, session.phone_number
     
-    return None
+    return None, None

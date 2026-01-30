@@ -64,7 +64,7 @@ class TelegramLoginView(generics.GenericAPIView):
         if not code:
             return Response({'error': 'Code is required'}, status=status.HTTP_400_BAD_REQUEST)
         
-        telegram_id = verify_telegram_code(code)
+        telegram_id, phone_number = verify_telegram_code(code)
         if not telegram_id:
             return Response({'error': 'Invalid or expired code'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -73,6 +73,11 @@ class TelegramLoginView(generics.GenericAPIView):
             telegram_id=telegram_id,
             defaults={'username': f'tg_{telegram_id}'}
         )
+        
+        # Update phone number if provided and not set
+        if phone_number and not user.phone_number:
+            user.phone_number = phone_number
+            user.save()
         
         refresh = RefreshToken.for_user(user)
         return Response({

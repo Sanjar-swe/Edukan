@@ -26,6 +26,7 @@ class TelegramAuthSession(models.Model):
     code = models.CharField(max_length=6, verbose_name="Tasdıqlaw kodı")
     telegram_id = models.BigIntegerField(verbose_name="Telegram ID")
     chat_id = models.BigIntegerField(verbose_name="Chat ID")
+    phone_number = models.CharField(max_length=20, verbose_name="Telefon nomeri", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Jaratılǵan waqtı")
     is_used = models.BooleanField(default=False, verbose_name="Paydalanıldı")
 
