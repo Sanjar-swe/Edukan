@@ -1,9 +1,18 @@
 from rest_framework import viewsets, permissions, filters, status
 from rest_framework.response import Response
+from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from ..models import Category, Product
 from ..serializers import CategorySerializer, ProductSerializer
+
+class ProductFilter(django_filters.FilterSet):
+    min_price = django_filters.NumberFilter(field_name="price", lookup_expr='gte')
+    max_price = django_filters.NumberFilter(field_name="price", lookup_expr='lte')
+
+    class Meta:
+        model = Product
+        fields = ['category', 'category__parent']
 
 @extend_schema(tags=['1. Ónimler (Catalog)'])
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
@@ -23,7 +32,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.filter(is_active=True)
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['category', 'category__parent', 'price']
+    filterset_class = ProductFilter
     search_fields = ['name', 'description']
     ordering_fields = ['price', 'created_at']
 

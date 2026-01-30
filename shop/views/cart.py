@@ -28,17 +28,25 @@ class CartViewSet(viewsets.ViewSet):
             return Response({"error": "Sanı nadurıs formatta"}, status=status.HTTP_400_BAD_REQUEST)
 
         product = get_object_or_404(Product, id=product_id)
-        if product.stock < quantity:
-            return Response({"error": "Stockda jetkilikli onim joq"}, status=status.HTTP_400_BAD_REQUEST)
-        
         cart, _ = Cart.objects.get_or_create(user=request.user)
-        item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-
-        if not created:
-            item.quantity += quantity
+        
+        # Checking cumulative quantity
+        existing_item = CartItem.objects.filter(cart=cart, product=product).first()
+        current_qty = existing_item.quantity if existing_item else 0
+        total_qty = current_qty + quantity
+        
+        if product.stock < total_qty:
+            return Response({
+                "error": "Stockda jetkilikli onim joq", 
+                "details": f"Qoymada bar: {product.stock}, sebetińizde: {current_qty}, soralıp atır: {quantity}"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if existing_item:
+            existing_item.quantity = total_qty
+            existing_item.save()
         else: 
-            item.quantity = quantity
-        item.save()
+            CartItem.objects.create(cart=cart, product=product, quantity=quantity)
+            
         return Response({"message": "Onim sebetke qosildi"}, status=status.HTTP_201_CREATED)
 
     def destroy(self, request, pk=None):

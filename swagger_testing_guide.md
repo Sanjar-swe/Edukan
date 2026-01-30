@@ -1,92 +1,82 @@
-# Swagger API Testing Guide: Step-by-Step
+# 🚀 Руководство по тестированию API через Swagger UI
 
-Follow this guide to test the full "Online Dukan" shopping cycle directly from the Swagger UI at `/api/schema/swagger-ui/`.
-
----
-
-## 🔑 Step 0: Authentication (Users & Auth)
-
-### 1. Register a User
-*   **Endpoint**: `POST /api/users/register/`
-*   **Action**: Click "Try it out".
-*   **Data**: Enter a unique `username`, `email`, and `password`.
-*   **Result**: You will get an `access` and `refresh` token in the response.
-
-### 2. Login (Optional)
-*   **Endpoint**: `POST /api/users/login/`
-*   **Data**: Enter the credentials you just created.
-*   **Result**: Copy the `access` token.
-
-### 3. Authorize in Swagger
-*   Scroll to the top and click the green **Authorize** button.
-*   Enter: `Bearer <your_access_token>`
-*   Click **Authorize** then **Close**. Now all requests will be authenticated.
+Этот гайд поможет вам (и вашему фронтенд-разработчику) протестировать полный цикл покупки в "Online Dukan" через интерфейс Swagger.
 
 ---
 
-## 📦 Step 1: Catalog (Browse Products)
+## 🔑 Шаг 0: Авторизация
 
-### 1. View Categories
-*   **Endpoint**: `GET /api/shop/categories/`
-*   **Action**: List available categories. Note an `id` for filtering.
+### 1. Регистрация
+*   **Эндпоинт**: `POST /api/users/register/`
+*   **Действие**: Нажмите "Try it out", введите уникальный `username` и `password`.
+*   **Результат**: Вы получите JWT токены (`access` и `refresh`).
 
-### 2. View Products
-*   **Endpoint**: `GET /api/shop/products/`
-*   **Action**: Browse available products. Note the `id` and check the `stock` amount.
+### 2. Логин (если уже есть аккаунт)
+*   **Эндпоинт**: `POST /api/users/login/`
+*   **Данные**: Ваши учетные данные. **Admin панель:** `Admin` / `admin`.
+
+### 3. Настройка Swagger (Authorize)
+*   Скопируйте полученный `access` токен.
+*   Нажмите зеленую кнопку **Authorize** в самом верху страницы.
+*   Введите: `Bearer <ваш_токен>` (через пробел после слова Bearer).
+*   Нажмите **Authorize**, затем **Close**. Теперь все запросы будут идти от вашего имени.
 
 ---
 
-## 🛒 Step 2: Cart (Add Items)
+## 📦 Шаг 1: Каталог и Товары
 
-### 1. Add Product to Cart
-*   **Endpoint**: `POST /api/shop/cart/add/`
-*   **Data**:
+### 1. Категории
+*   **Эндпоинт**: `GET /api/shop/categories/`
+*   **Что искать**: Запомните `id` или `slug` категории для фильтрации.
+
+### 2. Список товаров
+*   **Эндпоинт**: `GET /api/shop/products/`
+*   **Что искать**: Запомните `id` товара, который хотите купить.
+
+---
+
+## 🛒 Шаг 2: Корзина
+
+### 1. Добавить в корзину
+*   **Эндпоинт**: `POST /api/shop/cart/add/`
+*   **Пример данных**:
     ```json
     {
       "product_id": 1, 
-      "quantity": 2
+      "quantity": 1
     }
     ```
-*   **Validation**: Ensure `quantity` does not exceed the `stock` found in Step 1.
 
-### 2. Check Cart Content
-*   **Endpoint**: `GET /api/shop/cart/`
-*   **Action**: Verify that the product is there and note the item `id` (this is the CartItem ID, used in checkout).
+### 2. Просмотр корзины
+*   **Эндпоинт**: `GET /api/shop/cart/`
+*   **Важно**: Здесь вы увидите `id` элементов корзины, которые понадобятся для оформления заказа.
 
 ---
 
-## 💳 Step 3: Checkout (Place Order)
+## 💳 Шаг 3: Оформление Заказа (Checkout)
 
-### 1. Checkout
-*   **Endpoint**: `POST /api/shop/orders/checkout/`
-*   **Data**:
+### 1. Создание заказа
+*   **Эндпоинт**: `POST /api/shop/orders/checkout/`
+*   **Данные**:
     ```json
     {
-      "address": "123 Green St, Nukus",
-      "cart_item_ids": [1] 
+      "address": "ул. Пушкина, дом Колотушкина",
+      "cart_item_ids": [123] 
     }
     ```
-*   **Important**: Use the item IDs from your cart response (Step 2.2).
-*   **Result**: Your cart will be cleared, and a new Order will be created.
+    *(Где `123` — это ID элемента из ответа корзины на предыдущем шаге).*
 
 ---
 
-## ⭐ Step 4: Reviews (Feedback)
+## ⭐ Шаг 4: Отзывы
 
-### 1. Leave a Review
-*   **Endpoint**: `POST /api/shop/reviews/`
-*   **Data**:
-    ```json
-    {
-      "product": 1,
-      "rating": 5,
-      "comment": "Perfect service!"
-    }
-    ```
-*   **Verification**: The `user_name` will be automatically populated from your authenticated session.
+### 1. Оставить отзыв
+*   **Эндпоинт**: `POST /api/shop/reviews/`
+*   **Данные**: Укажите `product` (ID товара), `rating` (от 1 до 5) и `comment`.
 
 ---
 
-### 💡 Pro Tips
-*   **JWT Expiry**: If you get a `401 Unauthorized`, re-login and update the **Authorize** token.
-*   **Admin Tasks**: Certain endpoints (like creating products) require an admin user (`is_staff=True`).
+## 💡 Полезные советы
+*   **Ошибка 401 Unauthorized**: Ваш токен истек. Сделайте заново Login и обновите кнопку Authorize.
+*   **Ошибка 403 Forbidden**: Вы пытаетесь выполнить действие админа (например, создать товар), не будучи админом.
+*   **Замочки 🔒**: Показывают, что эндпоинт требует авторизации.
