@@ -54,8 +54,15 @@ def test_order_checkout_process(api_client, user):
     
     # 2. Оформление заказа через ваш экшен 'checkout'
     checkout_url = reverse('orders-checkout') 
+    
+    # Получаем ID айтемов из корзины для оформления
+    cart_url = reverse('cart-list')
+    cart_data = api_client.get(cart_url).data
+    cart_item_ids = [item['id'] for item in cart_data['items']]
+    
     order_data = {
-        'address': 'Karakalpakstan, Nukus'
+        'address': 'Karakalpakstan, Nukus',
+        'cart_item_ids': cart_item_ids
     }
     
     response = api_client.post(checkout_url, order_data)

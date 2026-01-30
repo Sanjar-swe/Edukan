@@ -1,11 +1,28 @@
 from rest_framework import generics, permissions, status, serializers
+from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 from .serializers import RegistrationSerializer, UserSerializer
 from .models import User
 from .telegram_utils import verify_telegram_code
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+# JWT Views with Swagger tags
+@extend_schema_view(
+    post=extend_schema(tags=['0. Paydalanıwshılar (Users & Auth)'])
+)
+class DecoratedTokenObtainPairView(TokenObtainPairView):
+    pass
+
+@extend_schema_view(
+    post=extend_schema(tags=['0. Paydalanıwshılar (Users & Auth)'])
+)
+class DecoratedTokenRefreshView(TokenRefreshView):
+    pass
 
 # Регистрация нового пользователя
+@extend_schema(tags=['0. Paydalanıwshılar (Users & Auth)'])
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (permissions.AllowAny,)
@@ -25,6 +42,7 @@ class RegisterView(generics.CreateAPIView):
         }, status=status.HTTP_201_CREATED)
 
 # Просмотр и редактирование своего профиля
+@extend_schema(tags=['0. Paydalanıwshılar (Users & Auth)'])
 class ProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticated,)
@@ -35,6 +53,7 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 class TelegramLoginSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=6, help_text="Код подтверждения из Telegram бота")
 
+@extend_schema(tags=['0. Paydalanıwshılar (Users & Auth)'])
 class TelegramLoginView(generics.GenericAPIView):
     permission_classes = (permissions.AllowAny,)
     serializer_class = TelegramLoginSerializer

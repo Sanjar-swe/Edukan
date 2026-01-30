@@ -175,7 +175,11 @@ SIMPLE_JWT = {
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Online Dukan API',
-    'DESCRIPTION': 'API для интернет-магазина Online Dukan',
+    'DESCRIPTION': (
+        'Shopping Flow Guidelines:\n'
+        '1. Browse Catalog -> 2. Manage Cart -> 3. Checkout Order -> 4. Leave Review\n\n'
+        'API для интернет-магазина Online Dukan'
+    ),
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'SWAGGER_UI_SETTINGS': {
