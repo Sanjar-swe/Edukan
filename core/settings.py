@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Сторонние приложения
     'rest_framework', # для rest framework
+    'corsheaders', # для CORS
     'django_filters', # для фильтрации
     'drf_spectacular', # для документации (OpenAPI 3.0)
     'debug_toolbar',
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # Перед CommonMiddleware
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -128,6 +130,10 @@ if DEBUG:
         '127.0.0.1',
         'localhost',
     ]
+
+# CORS & CSRF Settings for Ngrok/Frontend
+CORS_ALLOW_ALL_ORIGINS = True  # Для удобства разработки. В продакшене ограничить!
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://*.ngrok.io,https://*.ngrok-free.app').split(',')
 
 
 # Static files (CSS, JavaScript, Images)

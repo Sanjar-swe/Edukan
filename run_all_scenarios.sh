@@ -13,16 +13,30 @@ print_step() {
 # Helper: Ensure Product exists
 ensure_data() {
     echo "Подготовка данных..."
-    python3 manage.py shell <<EOF
+    ./venv/bin/python manage.py shell <<EOF
 from shop.models import Category, Product
 cat, _ = Category.objects.get_or_create(name="Электроника", slug="electronics")
 Product.objects.get_or_create(
-    category=cat, name="Смартфон X", slug="phone-x-test", 
-    price=5000000, stock=100, is_active=True, description="Тест"
+    slug="phone-x-test",
+    defaults={
+        'category': cat, 
+        'name': "Смартфон X", 
+        'price': 5000000, 
+        'stock': 100, 
+        'is_active': True, 
+        'description': "Тест"
+    }
 )
 Product.objects.get_or_create(
-    category=cat, name="Наушники Y", slug="audio-y-test", 
-    price=200000, stock=50, is_active=True, description="Тест аудио"
+    slug="audio-y-test",
+    defaults={
+        'category': cat, 
+        'name': "Наушники Y", 
+        'price': 200000, 
+        'stock': 50, 
+        'is_active': True, 
+        'description': "Тест аудио"
+    }
 )
 EOF
 }
