@@ -73,46 +73,31 @@ python manage.py runserver
 ## API Endpointler Dizimi
 
 ### 1. Autentifikaciya (`/api/users/`)
-Barlıq login hám dizimnen ótiwi boyınsha endpointler `users/views.py` hám `users/urls.py` fayllarında jaylasqan.
+Barlıq login hám dizimnen ótiwi boyınsha endpointler `users/views.py` faylında jaylasqan.
 
-- **Login:** `POST /login/`
-  - *Class:* `TokenObtainPairView` (SimpleJWT)
-  - *Filename:* `users/urls.py`
-- **Token Refresh:** `POST /token/refresh/`
-  - *Class:* `TokenRefreshView` (SimpleJWT)
-  - *Filename:* `users/urls.py`
-- **Registraciya:** `POST /register/`
-  - *Note:* `telegram_code` (6 sanlı) kiritiliwi shárt.
-- **Telegram Login:** `POST /telegram-login/`
-  - *Note:* Tek bot-tan alınǵan kod arqalı tez kirisiw.
-- **Profil:** `GET/PUT/PATCH /profile/`
-  - *Class:* `ProfileView` (generics.RetrieveUpdateAPIView)
-  - *Filename:* `users/views.py`
+- **Login:** `POST /api/users/login/` (0. Steps)
+- **Token Refresh:** `POST /api/users/token/refresh/`
+- **Registraciya:** `POST /api/users/register/`
+- **Telegram Login:** `POST /api/users/telegram-login/`
+- **Profil:** `GET/PUT/PATCH /api/users/profile/`
 
 ### 2. Dúkan xızmetleri (`/api/shop/`)
-Dúkanǵa baylanıslı barlıq endpointler `shop/views.py` degi ViewSet-ler járdeminde iske túsirilgen, marshrutlar `shop/urls.py`da belgilengen.
+Dúkanǵa baylanıslı endpointler `shop/views/` paketinde gruppalanǵan:
 
-- **Kategoriyalar:** `GET /categories/`
-  - *Class:* `CategoryViewSet` (viewsets.ReadOnlyModelViewSet)
-  - *Filename:* `shop/views.py`
-- **Ónimler:** `GET /products/`
-  - *Class:* `ProductViewSet` (viewsets.ModelViewSet)
-  - *Filename:* `shop/views.py`
-- **Sebet (Cart):** `GET /cart/`, `POST /cart/add/`, `DELETE /cart/{product_id}/`
-  - *Class:* `CartViewSet` (viewsets.ViewSet)
-  - *Filename:* `shop/views.py`
-- **Buyırtpalar (Orders):** `GET /orders/`, `POST /orders/checkout/`
-  - *Class:* `OrderViewSet` (viewsets.ModelViewSet)
-  - *Filename:* `shop/views.py`
-  - *Note:* `checkout` requires `cart_item_ids` (list) and `address` (string).
-- **Pikirler (Reviews):** `GET /reviews/`, `POST /reviews/`
-  - *Class:* `ReviewViewSet` (viewsets.ModelViewSet)
-  - *Filename:* `shop/views.py`
+- **1. Ónimler (Catalog):** `GET /categories/`, `GET /products/`
+  - *Module:* `shop/views/catalog.py`
+- **2. Sebet (Cart):** `GET /cart/`, `POST /cart/add/`, `DELETE /cart/{product_id}/`
+  - *Module:* `shop/views/cart.py`
+- **3. Buyırtpalar (Checkout):** `GET /orders/`, `POST /orders/checkout/`
+  - *Module:* `shop/views/orders.py`
+- **4. Pikirler (Reviews):** `GET /reviews/`, `POST /reviews/`
+  - *Module:* `shop/views/reviews.py`
 
 ## API Hújjetleri (Documentation)
 
 Barlıq endpointler boyınsha tolıq maǵlıwmat hám testlew ushın:
-- **Swagger UI:** `http://127.0.0.1:8000/swagger/`
+- **Swagger UI:** `http://127.0.0.1:8000/api/schema/swagger-ui/`
+- **Testing Guide:** [swagger_testing_guide.md](file:///home/swe/Desktop/OnlineDukan/swagger_testing_guide.md) (Step-by-step manual)
 
 ## Texnologiyalar
 - Python 3.10+
@@ -120,4 +105,4 @@ Barlıq endpointler boyınsha tolıq maǵlıwmat hám testlew ushın:
 - Django REST Framework
 - PostgreSQL
 - Simple JWT
-- drf-yasg (Swagger)
+- drf-spectacular (Swagger)
