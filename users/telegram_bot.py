@@ -71,6 +71,10 @@ async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Iltimas, ózińizdiń kontaktıńızdı jiberiń / Пожалуйста, отправьте свой собственный контакт.")
             return
 
+        # Store phone number in context for future use (like Renew)
+        context.user_data['phone_number'] = contact.phone_number
+        logger.info(f"Phone number {contact.phone_number} stored in context for user {user_id}")
+
         logger.info(f"Proceeding to send verification code for user {user_id}")
         await send_verification_code(update, context, user_id, chat_id, contact.phone_number)
         
@@ -80,8 +84,11 @@ async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def login_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Quick command to get a new code."""
-    logger.info(f"Login command received from user {update.effective_user.id}")
-    await send_verification_code(update, context, update.effective_user.id, update.effective_chat.id)
+    user_id = update.effective_user.id
+    chat_id = update.effective_chat.id
+    phone_number = context.user_data.get('phone_number')
+    logger.info(f"Login command received from user {user_id}, remembered phone: {phone_number}")
+    await send_verification_code(update, context, user_id, chat_id, phone_number)
 
 async def send_verification_code(update_or_query, context, user_id, chat_id, phone_number=None):
     """Helper to generate and send/edit code message."""
@@ -125,7 +132,9 @@ async def renew_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     try:
         await query.answer("Kod jańalanbaqta... / Код обновляется...")
-        await send_verification_code(query, context, user_id, query.message.chat_id)
+        phone_number = context.user_data.get('phone_number')
+        logger.info(f"Renewing code for user {user_id}, remembered phone: {phone_number}")
+        await send_verification_code(query, context, user_id, query.message.chat_id, phone_number)
     except Exception as e:
         logger.error(f"Error in renew_callback for user {user_id}: {e}")
 

@@ -3,6 +3,9 @@ import string
 from django.utils import timezone
 from datetime import timedelta
 from .models import TelegramAuthSession
+import logging
+
+logger = logging.getLogger(__name__)
 
 def generate_verification_code(length=6):
     """Generates a numeric verification code."""
@@ -20,6 +23,7 @@ def create_auth_session(telegram_id, chat_id, phone_number=None):
         chat_id=chat_id,
         phone_number=phone_number
     )
+    logger.info(f"Created Telegram session: code={code}, id={telegram_id}, phone={phone_number}")
     return session
 
 def verify_telegram_code(code):
@@ -36,6 +40,8 @@ def verify_telegram_code(code):
     if session:
         session.is_used = True
         session.save()
+        logger.info(f"Verified Telegram code {code}: found session for id={session.telegram_id}, phone={session.phone_number}")
         return session.telegram_id, session.phone_number
     
+    logger.warning(f"Failed to verify Telegram code {code}: session not found or expired/used")
     return None, None

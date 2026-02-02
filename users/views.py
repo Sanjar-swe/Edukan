@@ -1,4 +1,5 @@
 from rest_framework import generics, permissions, status, serializers
+import logging
 from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 from .serializers import RegistrationSerializer, UserSerializer
@@ -65,6 +66,9 @@ class TelegramLoginView(generics.GenericAPIView):
             return Response({'error': 'Code is required'}, status=status.HTTP_400_BAD_REQUEST)
         
         telegram_id, phone_number = verify_telegram_code(code)
+        logger = logging.getLogger(__name__)
+        logger.info(f"Telegram verification: code={code}, id={telegram_id}, phone={phone_number}")
+        
         if not telegram_id:
             return Response({'error': 'Invalid or expired code'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -73,11 +77,18 @@ class TelegramLoginView(generics.GenericAPIView):
             telegram_id=telegram_id,
             defaults={'username': f'tg_{telegram_id}'}
         )
+        logger.info(f"User found/created: {user.username}, created={created}, phone_before={user.phone_number}")
         
         # Update phone number if provided and not set
-        if phone_number and not user.phone_number:
-            user.phone_number = phone_number
-            user.save()
+        if phone_number:
+            if not user.phone_number or user.phone_number == "":
+                user.phone_number = phone_number
+                user.save()
+                logger.info(f"Updated phone number for user {user.username} to {phone_number}")
+            else:
+                logger.info(f"User {user.username} already has a phone number: {user.phone_number}")
+        else:
+            logger.info(f"No phone number provided in this Telegram session")
         
         refresh = RefreshToken.for_user(user)
         return Response({
