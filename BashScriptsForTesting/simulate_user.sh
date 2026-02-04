@@ -46,8 +46,8 @@ echo "Результаты поиска получены."
 FIRST_ID=$(echo $PRODUCTS | jq -r '.results[0].id // empty')
 if [ -z "$FIRST_ID" ]; then
     echo "⚠️ Товары не найдены. Пытаемся создать тестовый товар через Django manage.py..."
-    python3 manage.py shell <<EOF
-from shop.models import Category, Product
+    python3 ../manage.py shell <<EOF
+from ..shop.models import Category, Product
 cat, _ = Category.objects.get_or_create(name="Электроника", slug="electronics")
 Product.objects.get_or_create(
     category=cat, name="Смартфон X", slug="phone-x-$(date +%s)", 

@@ -140,7 +140,7 @@ async def renew_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 if __name__ == '__main__':
     logger.info("Starting bot script...")
-    if not settings.TELEGRAM_BOT_TOKEN or settings.TELEGRAM_BOT_TOKEN == 'your-telegram-bot-token-here':
+    if not settings.TELEGRAM_BOT_TOKEN:
         logger.error("TELEGRAM_BOT_TOKEN is not set properly in .env")
     else:
         try:

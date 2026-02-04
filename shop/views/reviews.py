@@ -5,7 +5,7 @@ from ..serializers import ReviewSerializer
 
 @extend_schema(tags=['4. Pikirler (Reviews)'])
 class ReviewViewSet(viewsets.ModelViewSet):
-    queryset = Review.objects.all()
+    queryset = Review.objects.select_related('user').all()
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 

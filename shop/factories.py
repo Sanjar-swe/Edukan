@@ -1,5 +1,5 @@
 import factory
-from shop.models import Category, Product
+from shop.models import Category, Product, Order, OrderItem
 
 class CategoryFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -32,3 +32,21 @@ class ReviewFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     rating = factory.Faker('random_int', min=1, max=5)
     comment = factory.Faker('paragraph')
+
+class OrderFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Order
+    
+    user = factory.SubFactory(UserFactory)
+    total_price = 0
+    address = factory.Faker('address')
+    status = 'pending'
+
+class OrderItemFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OrderItem
+    
+    order = factory.SubFactory(OrderFactory)
+    product = factory.SubFactory(ProductFactory)
+    quantity = factory.Faker('random_int', min=1, max=5)
+    price = 1000.00

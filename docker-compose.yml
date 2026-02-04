@@ -41,5 +41,27 @@ services:
       - db
     restart: on-failure
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    restart: always
+
+  celery:
+    build: .
+    command: celery -A core worker -l info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+    depends_on:
+      - db
+      - redis
+    restart: on-failure
+
 volumes:
   postgres_data:
