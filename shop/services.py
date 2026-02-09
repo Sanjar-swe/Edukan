@@ -18,7 +18,10 @@ def create_order(dto: OrderCheckoutDTO) -> Order:
             raise ValidationError("Sebet tabilmadi")
         
         # 2. Выбираем элементы корзины, которые пользователь хочет купить
-        selected_items = cart.items.filter(id__in=dto.cart_item_ids).select_related('product')
+        if dto.cart_item_ids:
+            selected_items = cart.items.filter(id__in=dto.cart_item_ids).select_related('product')
+        else:
+            selected_items = cart.items.all().select_related('product')
         
         if not selected_items.exists():
             raise ValidationError("Saylang'an onimler tabilmadi yamasa sebet bos")

@@ -53,7 +53,8 @@ class OrderCheckoutSerializer(serializers.Serializer):
     address = serializers.CharField(max_length=500)
     cart_item_ids = serializers.ListField(
         child=serializers.IntegerField(),
-        help_text="ID элементов корзины, которые нужно оформить"
+        required=False,
+        help_text="ID элементов корзины, которые нужно оформить (если пусто - оформится вся корзина)"
     )
 
 # 4. Заказы
