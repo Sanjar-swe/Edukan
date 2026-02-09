@@ -16,6 +16,7 @@ class OrderViewSet(mixins.ListModelMixin,
                    viewsets.GenericViewSet):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = OrderSerializer
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']  # Exclude PUT
 
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
@@ -83,15 +84,6 @@ class OrderViewSet(mixins.ListModelMixin,
             return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": "Ishki сервер qatesi"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
-    def update(self, request, *args, **kwargs):
-        # Disable PUT endpoint, only PATCH allowed
-        return Response(
-            {"detail": "Method \"PUT\" not allowed."},
-            status=status.HTTP_405_METHOD_NOT_ALLOWED
-        )
 
 
 
