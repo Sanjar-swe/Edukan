@@ -11,19 +11,35 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 
 # JWT Views with Swagger tags
 @extend_schema_view(
-    post=extend_schema(tags=['0. Paydalanıwshılar (Users & Auth)'])
+    post=extend_schema(
+        tags=['0. Paydalanıwshılar (Users & Auth)'],
+        summary="Kiriw (Login)",
+        description="Sistemanı paydalanıw ushın login hám paroldi jiberiń. \n\n[Info For Backender]: JWT Authentication"
+    )
+
 )
 class DecoratedTokenObtainPairView(TokenObtainPairView):
     pass
 
 @extend_schema_view(
-    post=extend_schema(tags=['0. Paydalanıwshılar (Users & Auth)'])
+    post=extend_schema(
+        tags=['0. Paydalanıwshılar (Users & Auth)'],
+        summary="Token jańalaw",
+        description="Access tokendi jańalaw ushın refresh tokendi jiberiń. \n\n[Info For Backender]: JWT Refresh Mechanism"
+    )
+
 )
 class DecoratedTokenRefreshView(TokenRefreshView):
     pass
 
 # Регистрация нового пользователя
-@extend_schema(tags=['0. Paydalanıwshılar (Users & Auth)'])
+@extend_schema(
+    tags=['0. Paydalanıwshılar (Users & Auth)'],
+    summary="Dizimnen ótiw",
+    description="Dizimden ótiw ushın maǵlıwmatlardı jiberiń. \n\n[Info For Backender]: Background task Celery (Welcome Email)"
+)
+
+
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (permissions.AllowAny,)
@@ -43,10 +59,23 @@ class RegisterView(generics.CreateAPIView):
         }, status=status.HTTP_201_CREATED)
 
 # Просмотр и редактирование своего профиля
-@extend_schema(tags=['0. Paydalanıwshılar (Users & Auth)'])
+@extend_schema_view(
+    get=extend_schema(
+        tags=['0. Paydalanıwshılar (Users & Auth)'],
+        summary="Profildi kóriw",
+        description="Paydalanıwshı profil maǵlıwmatların kóriw. \n\n[Info For Backender]: Standard API Operation"
+    ),
+    patch=extend_schema(
+        tags=['0. Paydalanıwshılar (Users & Auth)'],
+        summary="Profildi ózgertiw",
+        description="Profil maǵlıwmatların jańalaw. \n\n[Info For Backender]: Standard API Operation"
+    )
+
+)
 class ProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticated,)
+    http_method_names = ['get', 'patch', 'head', 'options']
 
     def get_object(self):
         return self.request.user
@@ -54,7 +83,12 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 class TelegramLoginSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=6, help_text="Код подтверждения из Telegram бота")
 
-@extend_schema(tags=['0. Paydalanıwshılar (Users & Auth)'])
+@extend_schema(
+    tags=['0. Paydalanıwshılar (Users & Auth)'],
+    summary="Telegram login",
+    description="Telegram bot arqalı kirisiw kodın jiberiń. \n\n[Info For Backender]: OTP Verification via Telegram"
+)
+
 class TelegramLoginView(generics.GenericAPIView):
     permission_classes = (permissions.AllowAny,)
     serializer_class = TelegramLoginSerializer

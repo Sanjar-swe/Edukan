@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
@@ -9,16 +9,50 @@ from ..dto import OrderCheckoutDTO
 from ..services import create_order
 
 @extend_schema(tags=['3. Buyırtpa (Checkout)'])
-class OrderViewSet(viewsets.ModelViewSet):
+class OrderViewSet(mixins.ListModelMixin,
+                   mixins.RetrieveModelMixin,
+                   mixins.UpdateModelMixin,
+                   mixins.DestroyModelMixin,
+                   viewsets.GenericViewSet):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = OrderSerializer
 
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
             return Order.objects.none()
-        return Order.objects.filter(user=self.request.user)
+        if self.request.user.is_staff:
+            return Order.objects.all().select_related('user').prefetch_related('items__product')
+        return Order.objects.filter(user=self.request.user).select_related('user').prefetch_related('items__product')
 
-    @extend_schema(request=OrderCheckoutSerializer, responses={201: OrderSerializer})
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve', 'checkout']:
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
+
+    @extend_schema(
+        summary="Buyırtpalar tariyxı",
+        description="Paydalanıwshınıń barlıq buyırtpaların kóriw. \n\n[Info For Backender]: Standard API Operation"
+    )
+
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Buyırtpa detallerı",
+        description="Buyırtpa haqqında tolıq maǵlıwmat. \n\n[Info For Backender]: Standard API Operation"
+    )
+
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Buyırtpa rásmiylestiriw", 
+        description="Buyırtpa beriw ushın mánzildi jiberiń. \n\n[Info For Backender]: Background task Celery (Telegram notification)",
+        request=OrderCheckoutSerializer, 
+        responses={201: OrderSerializer}
+    )
+
+
     @action(detail=False, methods=['post'])
     def checkout(self, request):
         serializer = OrderCheckoutSerializer(data=request.data)
@@ -49,3 +83,32 @@ class OrderViewSet(viewsets.ModelViewSet):
             return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": "Ishki сервер qatesi"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+    def update(self, request, *args, **kwargs):
+        # Disable PUT endpoint, only PATCH allowed
+        return Response(
+            {"detail": "Method \"PUT\" not allowed."},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+
+
+
+    @extend_schema(
+        tags=['3.1 Buyırtpa (Admin)'], 
+        summary="Buyırtpa statusın ózgertiw (Admin)",
+        description="Buyırtpa statusın jańalaw. \n\n[Info For Backender]: Admin access only"
+    )
+
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+
+    @extend_schema(
+        tags=['3.1 Buyırtpa (Admin)'], 
+        summary="Buyırtpanı óshiriw (Admin)",
+        description="Buyırtpanı bazadan óshiriw. \n\n[Info For Backender]: Admin access only"
+    )
+
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)

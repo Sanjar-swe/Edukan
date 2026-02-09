@@ -44,3 +44,29 @@ class TestOrderTasks:
         # We test that it raises an exception (Celery's autoretry will catch it)
         with pytest.raises(Exception):
             send_order_notification_task(order.id)
+
+    def test_cleanup_abandoned_carts(self):
+        from shop.tasks import cleanup_abandoned_carts_task
+        from shop.models import Cart
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        # Create users
+        user1 = UserFactory(username="old_user")
+        user2 = UserFactory(username="new_user")
+        
+        # Create carts
+        cart1 = Cart.objects.create(user=user1)
+        cart2 = Cart.objects.create(user=user2)
+        
+        # Mock created_at for cart1 to be 15 days ago
+        # Note: auto_now_add makes it hard to change directly, so we use update()
+        Cart.objects.filter(id=cart1.id).update(created_at=timezone.now() - timedelta(days=15))
+        
+        # Run cleanup
+        result = cleanup_abandoned_carts_task()
+        
+        # Assertions
+        assert "Deleted 1 carts" in result
+        assert not Cart.objects.filter(id=cart1.id).exists()
+        assert Cart.objects.filter(id=cart2.id).exists()

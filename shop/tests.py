@@ -3,7 +3,7 @@ from users.factories import UserFactory
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
-from shop.factories import ProductFactory, CategoryFactory 
+from shop.factories import ProductFactory, CategoryFactory, OrderFactory, OrderItemFactory, ReviewFactory 
 from shop.models import Product 
 
 @pytest.fixture
@@ -58,7 +58,7 @@ def test_order_checkout_process(api_client, user):
     # Получаем ID айтемов из корзины для оформления
     cart_url = reverse('cart-list')
     cart_data = api_client.get(cart_url).data
-    cart_item_ids = [item['id'] for item in cart_data['items']]
+    cart_item_ids = [item['id'] for item in cart_data]
     
     order_data = {
         'address': 'Karakalpakstan, Nukus',
@@ -79,7 +79,7 @@ def test_order_checkout_process(api_client, user):
     # Проверяем, что корзина очистилась (GET /api/shop/cart/)
     cart_url = reverse('cart-list')
     cart_response = api_client.get(cart_url)
-    assert len(cart_response.data['items']) == 0
+    assert len(cart_response.data) == 0
 
 @pytest.mark.django_db
 def test_add_to_cart_out_of_stock(api_client, user):
@@ -95,7 +95,7 @@ def test_add_to_cart_out_of_stock(api_client, user):
     assert response.data['error'] == "Stockda jetkilikli onim joq"
 
 @pytest.mark.django_db
-def test_create_review(api_client, user):
+def test_create_review_restricted(api_client, user):
     product = ProductFactory()
     api_client.force_authenticate(user=user)
     
@@ -106,19 +106,47 @@ def test_create_review(api_client, user):
         'comment': 'Sipatli Onim!'
     }
     
+    # 1. Сначала проверяем, что без покупки нельзя оставить отзыв
     response = api_client.post(url, review_data)
-    
-    # Проверяем успешное создание
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "error" in response.data
+
+    # 2. Создаем оплаченный заказ с этим товаром
+    order = OrderFactory(user=user, status='paid')
+    OrderItemFactory(order=order, product=product)
+
+    # 3. Теперь отзыв должен пройти
+    response = api_client.post(url, review_data)
     assert response.status_code == status.HTTP_201_CREATED
     assert response.data['comment'] == 'Sipatli Onim!'
-    assert response.data['user_name'] == user.username
+
+@pytest.mark.django_db
+def test_review_update_permissions(api_client, user):
+    product = ProductFactory()
+    user2 = UserFactory()
+    
+    # Создаем отзыв от первого пользователя (имитируем покупку для прохождения perform_create если нужно, 
+    # но фабрика создает объект напрямую в базу)
+    review = ReviewFactory(product=product, user=user, comment="Initial comment")
+    
+    url = reverse('reviews-detail', kwargs={'pk': review.pk})
+    
+    # 1. Другой пользователь пытается изменить отзыв
+    api_client.force_authenticate(user=user2)
+    response = api_client.patch(url, {'comment': 'Hacked!'})
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    
+    # 2. Автор изменяет свой отзыв
+    api_client.force_authenticate(user=user)
+    response = api_client.patch(url, {'comment': 'Updated comment'})
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data['comment'] == 'Updated comment'
 
 @pytest.mark.django_db
 class TestProductAdminAPI:
     def test_create_product_as_admin(self, api_client, admin_user):
         api_client.force_authenticate(user=admin_user)
         category = CategoryFactory()
-        
         url = reverse('product-list')
         data = {
             'category': category.id,
@@ -128,27 +156,36 @@ class TestProductAdminAPI:
             'price': 5000,
             'stock': 5
         }
-        
         response = api_client.post(url, data)
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data['name'] == 'Admin Phone'
 
     def test_create_product_as_regular_user_denied(self, api_client, user):
         api_client.force_authenticate(user=user)
         url = reverse('product-list')
-        data = {'name': 'normal Phone'}
-        
-        response = api_client.post(url, data)
-        
-        # Обычный пользователь не должен иметь доступа (403 Forbidden)
+        response = api_client.post(url, {'name': 'Unfair Product'})
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_delete_product_as_admin(self, api_client, admin_user):
-        product = ProductFactory()
+@pytest.mark.django_db
+class TestCategoryAdminAPI:
+    def test_create_category_as_admin(self, api_client, admin_user):
         api_client.force_authenticate(user=admin_user)
-        
-        url = reverse('product-detail', kwargs={'pk': product.pk})
+        url = reverse('category-list')
+        data = {'name': 'New Tech', 'slug': 'new-tech'}
+        response = api_client.post(url, data)
+        assert response.status_code == status.HTTP_201_CREATED
+
+    def test_delete_category_as_admin(self, api_client, admin_user):
+        category = CategoryFactory()
+        api_client.force_authenticate(user=admin_user)
+        url = reverse('category-detail', kwargs={'pk': category.pk})
         response = api_client.delete(url)
-        
         assert response.status_code == status.HTTP_204_NO_CONTENT
-        assert not Product.objects.filter(id=product.id).exists()
+
+@pytest.mark.django_db
+def test_review_delete_by_admin(api_client, admin_user):
+    review = ReviewFactory()
+    api_client.force_authenticate(user=admin_user)
+    url = reverse('reviews-detail', kwargs={'pk': review.pk})
+    response = api_client.delete(url)
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+

@@ -2,11 +2,32 @@ from celery import shared_task
 from django.conf import settings
 import requests
 import logging
-from .models import Order
+from django.utils import timezone
+from datetime import timedelta
+from .models import Order, Cart
 
 logger = logging.getLogger(__name__)
 
+@shared_task
+def cleanup_abandoned_carts_task():
+    """
+    Периодическая задача для удаления брошенных корзин (старше 14 дней).
+    Помогает поддерживать чистоту базы данных.
+    """
+    expiry_date = timezone.now() - timedelta(days=14)
+    abandoned_carts = Cart.objects.filter(created_at__lt=expiry_date)
+    count = abandoned_carts.count()
+    
+    if count > 0:
+        abandoned_carts.delete()
+        logger.info(f"Cleanup: Deleted {count} abandoned carts older than 14 days.")
+    else:
+        logger.info("Cleanup: No abandoned carts to delete.")
+    
+    return f"Deleted {count} carts"
+
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, max_retries=5)
+
 def send_order_notification_task(self, order_id):
     """
     Фоновая задача для отправки уведомления в Telegram.

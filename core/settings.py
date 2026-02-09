@@ -171,7 +171,9 @@ REST_FRAMEWORK = {
         'auth_attempt': '25/minute',
     },
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'EXCEPTION_HANDLER': 'api.exceptions.custom_exception_handler',
 }
+
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=360),
@@ -190,9 +192,12 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
     'SWAGGER_UI_SETTINGS': {
         'persistAuthorization': True,
+        'tagsSorter': 'alpha',
+        'operationsSorter': 'alpha',
     },
-    # Другие настройки
 }
+
+
 
 # Celery Configuration
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
@@ -202,7 +207,16 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 
+from celery.schedules import crontab
+CELERY_BEAT_SCHEDULE = {
+    'cleanup-abandoned-carts-daily': {
+        'task': 'shop.tasks.cleanup_abandoned_carts_task',
+        'schedule': crontab(hour=0, minute=0),  # Ежедневно в полночь
+    },
+}
+
 # Caching Configuration (Redis)
+
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
