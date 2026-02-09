@@ -42,6 +42,7 @@ class ReviewViewSet(mixins.ListModelMixin,
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
     http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
+    pagination_class = None  # Disable pagination for reviews
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['product']
 
