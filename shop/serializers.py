@@ -11,12 +11,33 @@ class CategorySerializer(serializers.ModelSerializer):
 # 2. Товары
 class ProductSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
+    discount_percent = serializers.IntegerField(source='calc_discount_percent', read_only=True)
+    is_on_sale = serializers.BooleanField(read_only=True)
+    set_discount_percent = serializers.IntegerField(write_only=True, required=False, min_value=0, max_value=99)
     
     class Meta:
         model = Product
-        fields = ['id', 'category', 'category_name', 'name', 'slug', 
+        fields = [
+            'id', 'category', 'category_name', 'name', 'slug', 
             'description', 'price', 'discount_price', 'image', 
-            'stock', 'is_active']
+            'stock', 'is_active', 'discount_percent', 'is_on_sale',
+            'set_discount_percent'
+        ]
+
+    def validate(self, attrs):
+        price = attrs.get('price')
+        # If we are updating, we might not have price in attrs, so get from instance
+        if not price and self.instance:
+            price = self.instance.price
+            
+        discount_percent = attrs.pop('set_discount_percent', None)
+        
+        if discount_percent is not None and price:
+            from decimal import Decimal
+            discount_multiplier = Decimal(1) - (Decimal(discount_percent) / Decimal(100))
+            attrs['discount_price'] = (price * discount_multiplier).quantize(Decimal('0.01'))
+            
+        return attrs
 
 # 3. Корзина
 # одна позиция в корзине (товар + количество)

@@ -39,11 +39,35 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def is_on_sale(self):
+        """Returns True if the product has a valid discount."""
+        return self.discount_price is not None and self.discount_price < self.price
+
+    @property
+    def calc_discount_percent(self):
+        """Calculates the percentage of the discount."""
+        if self.is_on_sale:
+            discount_amount = self.price - self.discount_price
+            return int((discount_amount / self.price) * 100)
+        return 0
+
     def get_price(self):
         """Returns discount_price if it exists, otherwise price."""
         if self.discount_price:
             return self.discount_price
         return self.price
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.discount_price and self.discount_price >= self.price:
+            raise ValidationError({
+                'discount_price': "Shegirmeli baha tiykarg'i bahadan kishi boliwi shart! / Скидочная цена должна быть меньше основной!"
+            })
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 # --- Корзина (Cart) ---
 

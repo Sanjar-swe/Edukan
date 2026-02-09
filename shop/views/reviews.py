@@ -27,7 +27,7 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
     ),
     destroy=extend_schema(
         summary="Pikir óshiriw",
-        description="Pikirni bazadan óshiriw. \n\n[Info For Backender]: Author only (Strict)"
+        description="Pikirdi bazadan óshiriw. \n\n[Info For Backender]: Author only (Strict)"
     )
 
 )
