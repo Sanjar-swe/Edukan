@@ -1,4 +1,6 @@
-from rest_framework import viewsets, permissions, serializers, mixins
+from rest_framework import viewsets, permissions, serializers, mixins, status
+from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from ..models import Review, OrderItem
 from ..serializers import ReviewSerializer
@@ -13,7 +15,7 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
 @extend_schema_view(
     list=extend_schema(
         summary="Pikirler dizimi",
-        description="Ónim haqqında barlıq pikirlerdi kóriw. \n\n[Info For Backender]: Standard API Operation"
+        description="Ónim haqqında pikirlerdi kóriw. ?product={id} parametri SHÁRT. \n\n[Info For Backender]: Product filter REQUIRED"
     ),
     create=extend_schema(
         summary="Pikir qaldırıw",
@@ -40,6 +42,17 @@ class ReviewViewSet(mixins.ListModelMixin,
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
     http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['product']
+
+    def list(self, request, *args, **kwargs):
+        # Require product parameter
+        if not request.query_params.get('product'):
+            return Response(
+                {"error": "product parametri kiritiliwi shárt"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().list(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         product = serializer.validated_data.get('product')
