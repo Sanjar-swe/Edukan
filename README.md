@@ -46,7 +46,7 @@ docker-compose up
 Eger proektti internetke shıǵarıp testlemekshi bolsańız:
 1. `ngrok http 8000` buyrıǵın jıberip URL-dı alıń.
 2. Sol URL-dı `.env`-dag'i `CSRF_TRUSTED_ORIGINS`-ge kiritiń.
-3. [NGROK_GUIDE.md](file:///home/swe/Desktop/OnlineDukan/NGROK_GUIDE.md) boyınsha tolıq instrukciyanı kóriń.
+3. [NGROK_GUIDE.md](file:///home/swe/Desktop/OnlineDukan/Documentation/NGROK_GUIDE.md) boyınsha tolıq instrukciyanı kóriń.
 
 ---
 
@@ -103,7 +103,7 @@ Dúkanǵa baylanıslı endpointler `shop/views/` paketinde gruppalanǵan:
 
 Barlıq endpointler boyınsha tolıq maǵlıwmat hám testlew ushın:
 - **Swagger UI:** `http://127.0.0.1:8000/api/schema/swagger-ui/`
-- **Testing Guide:** [swagger_testing_guide.md](file:///home/swe/Desktop/OnlineDukan/swagger_testing_guide.md) (Step-by-step manual)
+- **Testing Guide:** [swagger_testing_guide.md](file:///home/swe/Desktop/OnlineDukan/Documentation/swagger_testing_guide.md) (Step-by-step manual)
 
 ## Texnologiyalar
 - Python 3.10+
