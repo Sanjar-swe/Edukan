@@ -6,7 +6,7 @@ from drf_spectacular.utils import extend_schema
 from ..models import Order
 from ..serializers import OrderSerializer, OrderCheckoutSerializer
 from ..dto import OrderCheckoutDTO
-from ..services import create_order
+from ..services import create_order, pay_order
 
 @extend_schema(tags=['3. Buyırtpa (Checkout)'])
 class OrderViewSet(mixins.ListModelMixin,
@@ -26,7 +26,7 @@ class OrderViewSet(mixins.ListModelMixin,
         return Order.objects.filter(user=self.request.user).select_related('user').prefetch_related('items__product')
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve', 'checkout']:
+        if self.action in ['list', 'retrieve', 'checkout', 'pay']:
             return [permissions.IsAuthenticated()]
         return [permissions.IsAdminUser()]
 
@@ -86,6 +86,22 @@ class OrderViewSet(mixins.ListModelMixin,
             return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": "Ishki сервер qatesi"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+    @extend_schema(
+        summary="Buyırtpa ushın tólem qılıw",
+        description="Buyırtpa statusın 'paid' (tólendi) qılıp ózgertedi. \n\n[Info For Backender]: Mock Payment Action",
+        responses={200: OrderSerializer}
+    )
+    @action(detail=True, methods=['post'])
+    def pay(self, request, pk=None):
+        try:
+            # get_object() проверяет права доступа (get_queryset)
+            order = self.get_object() 
+            paid_order = pay_order(order.id, request.user)
+            return Response(OrderSerializer(paid_order).data, status=status.HTTP_200_OK)
+        except ValidationError as e:
+            return Response({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
 
 
 

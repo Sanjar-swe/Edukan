@@ -78,3 +78,30 @@ def create_order(dto: OrderCheckoutDTO) -> Order:
         transaction.on_commit(lambda: send_order_notification_task.delay(order.id))
 
         return order
+
+def pay_order(order_id: int, user) -> Order:
+    """
+    Simulyaciya oplaty zakaza.
+    V budushem zdes budet integraciya s platejnoy sistemoy.
+    """
+    with transaction.atomic():
+        # Blokiruem zakaz dlya izbejaniya race conditions
+        order = Order.objects.select_for_update().filter(id=order_id, user=user).first()
+        
+        if not order:
+            raise ValidationError("Buyırtpa tabilmadı yamasa sizge tiyisli emes")
+            
+        if order.status == 'paid':
+            raise ValidationError("Buyırtpa ushın aldın tólem qılgansız")
+            
+        if order.status == 'cancelled':
+            raise ValidationError("Biykar qılıngan buyırtpanı tólep bolmaydı")
+            
+        # Simulyaciya uspeshnoy oplaty
+        order.status = 'paid'
+        order.save(update_fields=['status'])
+        
+        # Zdes mojno otpravit uvedomlenie ob uspeshnoy oplate
+        # send_payment_success_notification.delay(order.id)
+        
+        return order
