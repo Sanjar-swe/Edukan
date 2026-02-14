@@ -6,23 +6,30 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Ключи-префиксы, используемые в @cache_page (views/catalog.py)
+CACHE_KEY_PREFIXES = ['product_list', 'product_detail', 'category_list']
+
+
 def clear_catalog_cache():
-    """Очищает кеш каталога (продукты и категории)."""
-    # В идеале здесь нужно использовать конкретные ключи, 
-    # но для простоты и надежности при изменении в админке сносим весь префикс или частотные ключи
+    """Очищает кеш каталога по конкретным ключам вместо полной очистки."""
     try:
-        # django-redis поддерживает .delete_pattern, но стандартный cache нет.
-        # Для начала просто удалим основные ключи, если мы знаем их паттерны, 
-        # или используем cache.clear() если проект небольшой.
-        cache.clear() 
-        logger.info("Catalog cache cleared successfully.")
+        for prefix in CACHE_KEY_PREFIXES:
+            # django-redis поддерживает delete_pattern для удаления по wildcard
+            cache.delete_pattern(f'*{prefix}*')
+        logger.info("Catalog cache invalidated for: %s", ', '.join(CACHE_KEY_PREFIXES))
+    except AttributeError:
+        # Fallback для не-redis бэкендов, которые не поддерживают delete_pattern
+        cache.clear()
+        logger.warning("Cache backend does not support delete_pattern, used cache.clear()")
     except Exception as e:
-        logger.error(f"Error clearing cache: {e}")
+        logger.error("Error clearing cache: %s", e)
+
 
 @receiver(post_save, sender=Product)
 @receiver(post_delete, sender=Product)
 def product_changed_handler(sender, instance, **kwargs):
     clear_catalog_cache()
+
 
 @receiver(post_save, sender=Category)
 @receiver(post_delete, sender=Category)

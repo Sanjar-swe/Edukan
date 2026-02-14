@@ -71,7 +71,11 @@ class CartAddSerializer(serializers.Serializer):
     quantity = serializers.IntegerField(default=1, min_value=1)
 
 class OrderCheckoutSerializer(serializers.Serializer):
-    address = serializers.CharField(max_length=500)
+    address = serializers.CharField(
+        max_length=500,
+        required=False,
+        help_text="Адрес доставки. Если не указан — используется адрес из профиля"
+    )
     cart_item_ids = serializers.ListField(
         child=serializers.IntegerField(),
         required=False,

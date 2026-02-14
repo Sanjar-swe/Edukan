@@ -3,9 +3,11 @@ from django.urls import path, include
 from django.conf import settings
 from rest_framework import permissions
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from api.views import health_check
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/health/', health_check, name='health-check'),
     path('api/users/', include('users.urls')),
     path('api/shop/', include('shop.urls')), 
     # Open API Schema
@@ -18,7 +20,8 @@ urlpatterns = [
 
 if settings.DEBUG:
     import debug_toolbar
+    from django.conf.urls.static import static
 
     urlpatterns = [
         path('__debug__/', include(debug_toolbar.urls)),
-    ] + urlpatterns
+    ] + urlpatterns + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

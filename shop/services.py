@@ -9,7 +9,7 @@ def create_order(dto: OrderCheckoutDTO) -> Order:
     """
     Бизнес-логика оформления заказа. 
     Независима от HTTP/DRF. 
-    Принимает DTO и возвращает объект Order.
+    Принимает Data Transfer Object (объект передачи данных) и возвращает объект Order.
     """
     with transaction.atomic():
         # 1. Получаем корзину пользователя
