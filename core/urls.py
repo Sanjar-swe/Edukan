@@ -3,9 +3,11 @@ from django.urls import path, include
 from django.conf import settings
 from rest_framework import permissions
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from api.views import health_check
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/health/', health_check, name='health-check'),
     path('api/users/', include('users.urls')),
     path('api/shop/', include('shop.urls')), 
     # Open API Schema
