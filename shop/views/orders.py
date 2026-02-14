@@ -58,20 +58,22 @@ class OrderViewSet(mixins.ListModelMixin,
     def checkout(self, request):
         serializer = OrderCheckoutSerializer(data=request.data)
         if not serializer.is_valid():
-            # Возвращаем первую ошибку в формате {"error": "поле: ошибка"}, как того ожидают тесты
             error_msg = next(iter(serializer.errors.values()))[0]
             field_name = next(iter(serializer.errors.keys()))
-            
-            # Если адрес пустой, возвращаем специфичное сообщение для прохождения старого теста
-            if field_name == 'address':
-                return Response({"error": "Jetkerip beriw mánzili (address) kiritiliwi shárt"}, status=status.HTTP_400_BAD_REQUEST)
-            
             return Response({"error": f"{field_name}: {error_msg}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Fallback на адрес из профиля, если не передан в запросе
+        address = serializer.validated_data.get('address') or getattr(request.user, 'address', None)
+        if not address:
+            return Response(
+                {"error": "Jetkerip beriw mánzili (address) kiritiliwi shárt"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         dto = OrderCheckoutDTO(
             user_id=request.user.id,
             cart_item_ids=serializer.validated_data.get('cart_item_ids', []),
-            address=serializer.validated_data.get('address')
+            address=address
         )
 
         try:
